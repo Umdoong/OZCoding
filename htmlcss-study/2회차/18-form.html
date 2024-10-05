@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>설문조사 양식</title>
+</head>
+<body>
+	<header>
+		<h1>설문조사 양식</h1>
+		<p>모든 항목에 빠짐없이 체크해주십시오.</p>
+	</header>
+	<hr>
+	<main>
+		<form>
+			<fieldset>
+				<legend>개인정보</legend>
+				<label for="name">이름</label>
+				<input type="text" name="name" id="name" placeholder="본명을 입력하세요">
+				<br>
+				<label for="email">이메일</label>
+				<input type="email" name="email" id="email" placeholder="메일 주소를 입력하세요">
+			</fieldset>
+			<fieldset>
+				<legend>설문</legend>
+				<p>연령대가 어떻게 되십니까?</p>
+				<input type="radio" id="teen" name="age">
+				<label for="teen">10대</label>
+				<input type="radio" id="teenty" name="age">
+				<label for="teenty">20대</label>
+				<input type="radio" id="thirty" name="age">
+				<label for="thirty">30대</label>
+				<input type="radio" id="fourty" name="age">
+				<label for="fourty">40대</label>
+				<input type="radio" id="fifty" name="age">
+				<label for="fifty">50대</label>
+				<input type="radio" id="other" name="age">
+				<label for="other">그 외</label>
+				<p>
+					음식을 선택할 때 중요하게 생각하는 것은 무엇입니까? 모두 고르시오.
+				</p>
+				<input type="checkbox" id="taste" name="food">
+				<label for="taste">맛</label>
+				<input type="checkbox" id="shape" name="food">
+				<label for="shape">모양(색)</label>
+				<input type="checkbox" id="smell" name="food">
+				<label for="smell">냄새</label>
+				<input type="checkbox" id="price" name="food">
+				<label for="price">가격</label>
+				<p>
+					다음 음식 중 가장 선호하는 음식을 고르시오.
+				</p>
+				<input type="radio" id="mintchoco" name="restaurant food">
+				<label for="mintchoco">민트초코</label>
+				<input type="radio" id="hawaiian pizza" name="restaurant food">
+				<label for="hawaiian pizza">하와이안 피자</label>
+				<input type="radio" id="raisin bread" name="restaurant food">
+				<label for="raisin bread">건포도 식빵</label>
+				<p>
+					좋아하는 김치를 모두 고르시오.
+				</p>
+				<input type="checkbox" id="kimchi" name="kimchi">
+				<label for="kimchi">배추김치</label>
+				<input type="checkbox" id="tangerine" name="kimchi">
+				<label for="tangerine">귤김치</label>
+				<input type="checkbox" id="watermelon" name="kimchi">
+				<label for="watermelon">수박김치</label>
+				<input type="checkbox" id="pineapple" name="kimchi">
+				<label for="pineapple">파인애플김치</label>
+				<input type="checkbox" id="mintchocokimchi" name="kimchi">
+				<label for="mintchocokimchi">민트초코김치</label>
+			</fieldset>
+			<fieldset>
+				<legend>최후의 만찬으로 먹고 싶은 것은?</legend>
+				<textarea cols="30" rows="3" name="comment"></textarea>
+			</fieldset>
+			<input type="submit">
+		</form>
+	</main>
+	<hr>
+	<footer>
+		<p>입력하느라 수고하셨습니다.</p>
+	</footer>
+</body>
+</html>
