@@ -23,7 +23,7 @@ body{
 	background-color: white;
 	padding: 15px;
 	height: 80px;
-} 
+}
 .exit{
 	float: right;
 	background-color: royalblue;
@@ -50,7 +50,7 @@ body{
 .user_nick{
 	font-family: 'Nanum Pen Script', monospace;
 	font-size : 32px
-}
+} 
 .user_count{
 	font-size: 12px;
 	color: gray;
