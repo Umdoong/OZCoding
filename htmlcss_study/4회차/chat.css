@@ -85,6 +85,6 @@ body{
 .chat_form_msg:focus{
 	outline: none;
 }
-.chat_form_bt:active{
+.chat_form_bt:active, .exit:active{
 	background-color: rgb(39, 76, 187);
 }
