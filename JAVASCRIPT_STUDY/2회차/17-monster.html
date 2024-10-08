@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="x-ua-compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>몬스터 잡기 게임</title>
+</head>
+<body>
+
+	<div id="container"></div>
+
+	<script>
+		let monsterHP = 100
+		const container = document.getElementById("container")
+		const h1 = document.createElement("h1")
+		h1.textContent = "보스 몬스터 잡기 게임을 시작합니다!"
+		container.appendChild(h1)
+
+		let attackDamage = parseInt(prompt("당신의 공격력을 설정하세요"))
+		let attackCount = 0
+
+		if(attackDamage <= 0){
+			alert("당신은 나약해서 보스 몬스터를 잡을 수 없습니다")
+		}else if(attackDamage <= 50){
+
+			while(monsterHP > 0){
+				monsterHP -= attackDamage //HP가 감소한다!
+				attackCount += 1 //때린 횟수가 증가한다!
+
+				const p =document.createElement("p")
+				p.textContent = `보스 몬스터를 ${attackCount}회 공격했다!`
+				container.append(p)
+
+				if(monsterHP < 0) {
+					monsterHP = 0
+				}
+
+				const strong = document.createElement("strong")
+				strong.textContent = `보스 몬스터의 남은 HP는 ${monsterHP}입니다!`
+				container.append(strong)
+				
+			}
+
+			const h2 = document.createElement("h2")
+			h2.textContent = "보스 몬스터를 처치했습니다! 당신은 세계를 구했습니다."
+			h2.style.color = "orange"
+			h2.title = "다른 세계를 구하고 싶으면 새로고침하세요"
+			container.appendChild(h2)
+
+		}else if(attackDamage > 50){
+			alert("당신은 양심이 없습니까?")
+		}else{
+			alert("당신의 잘못된 선택으로 세계가 멸망해버렸어요!")
+		}
+	</script>
+</body>
+</html>
