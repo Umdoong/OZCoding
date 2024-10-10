@@ -55,9 +55,8 @@ form.addEventListener("submit", function(event){
 	
 	alert(info.replace(/\t/g, ''))
 
-	//가입 잘 되었다!
-	document.body.innerHTML = ""
-	document.write(`<p>${userId}님 가입을 환영합니다.</p>`)
+	//가입이 잘 되었다!
+	location.href = "index.html"
 })
 
 //폰 자동 하이픈
