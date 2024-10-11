@@ -15,6 +15,24 @@ link.addEventListener('click', function(e) {
 });
 });
 
+
+// 이전, 다음 버튼 클릭 이벤트 추가
+document.getElementById('prevLink').addEventListener('click', function(e) {
+	e.preventDefault();
+	if (currentPage > 1) {
+	  currentPage--;
+	  updatePagination();
+	}
+  });
+  
+  document.getElementById('nextLink').addEventListener('click', function(e) {
+	e.preventDefault();
+	if (currentPage < totalPages) {
+	  currentPage++;
+	  updatePagination();
+	}
+  });
+
 // 페이지네이션 상태 업데이트
 function updatePagination() {
 // 이전 버튼 비활성화 처리
@@ -47,16 +65,16 @@ updatePagination();
 
 //시계
 function setClock(){
-  var dateInfo = new Date();
-  var hour =
+  let dateInfo = new Date();
+  let hour =
   modifyNumber(dateInfo.getHours());
-  var min =
+  let min =
   modifyNumber(dateInfo.getMinutes());
-  var sec =
+  let sec =
   modifyNumber(dateInfo.getSeconds());
-  var year = dateInfo.getFullYear();
-  var month = dateInfo.getMonth();
-  var date = dateInfo.getDate();
+  let year = dateInfo.getFullYear();
+  let month = dateInfo.getMonth();
+  let date = dateInfo.getDate();
   document.getElementById("time").innerHTML = hour + ":" + min + ":" + sec;
   document.getElementById("date").innerHTML = year + "년 " + (month+1) + "월 " + date + "일";
 }
