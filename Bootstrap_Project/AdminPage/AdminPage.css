@@ -1,0 +1,34 @@
+/* 시계 */
+.date, .time{
+  font-family: 'Licada Sans';
+  position: relative;
+  top: 50px;
+  display: flex;
+  justify-content: center;
+  top: auto;
+}
+.date{
+  font-size: 20px;
+}
+.time{
+  font-size: 20px;
+  font-weight: bold;
+}
+
+#new_title{
+  display: inline; 
+  padding: 3px;
+  margin: 3px
+}
+
+#inlineFormSelectPref{
+  width: 18%;
+  min-width: 120px;
+  float: left;
+  margin-right: 3px;
+}
+
+#selcetGender{
+  width: 8%;
+  min-width: 80px;
+}

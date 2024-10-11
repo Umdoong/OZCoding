@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko" data-bs-theme="" id="htmlPage">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <link href="darkmode.css" rel="stylesheet">
+  <link href="AdminPage.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <title>Admin Page</title>
+</head>
+<body>
+  <div class="container mt-3">
+	<div id="date" class="date"></div>
+	<div id="time" class="time"></div>
+    <h3 class="mt-5 mb-3" id= "new_title">신규 등록 상품</h3>
+	<!-- 회원가입버튼 -->
+	<div class="buttons" style="float: right; margin-left: 10px">
+		<input type="button" onclick="location.href='../Join/join.html'" value="회원가입" class="btn btn-primary" title="회원가입">
+	</div>
+	<!-- 다크모드 -->
+	<div style="float: right;">
+	  <strong style="float: top;">다크모드</strong>
+	  <input type="checkbox" class="checkbox" id="checkbox">
+	  <label for="checkbox" class="checkbox-label">
+	    <i class="fas fa-moon"></i>
+	    <i class="fas fa-sun"></i>
+	    <span class="ball"></span>
+	  </label>
+	</div>
+    <form class="row row-cols-lg-auto g-3 align-items-center" style="margin-top: 1px;">      
+      <div class="col-12">
+        <label class="visually-hidden" for="inlineFormSelectPref">Preference</label>
+        <select class="form-select" id="inlineFormSelectPref" name="category_data_table">
+          <!-- 셀렉트요소의 name="category_data_table"은 지우거나 변경하면 안돼요 -->
+          <!-- 카테고리 셀렉트 코드를 넣어주세요 -->
+		  <option selected>카테고리</option>
+		  <option value="1">상의</option>
+		  <option value="2">하의</option>
+		  <option value="3">신발</option>
+		  <option value="4">패션잡화</option>
+		</select>
+		<select class="form-select" aria-label="SelectGender" id= "selcetGender">
+			<option selected>성별</option>
+			<option value="1">남자</option>
+			<option value="2">여자</option>
+		  </select>
+      </div>
+      <div class="col-3" style="width: 100%; max-width: 300px">
+        <!-- input 입력창 코드를 넣어주세요 -->
+		<input type="text" class="form-control" placeholder="제품명을 입력해주세요" aria-label="제품명을 입력해주세요" aria-describedby="button-addon2">
+      </div>
+      <div class="col-auto">
+        <!-- 조회 버튼 코드를 넣어주세요 -->
+		<button class="btn btn-outline-primary" type="button" id="button-addon2">조회</button>
+      </div>
+    </form>
+
+    <div class="container mt-3">
+      <table class="table table-hover" style="table-layout: fixed">
+        <thead>
+          <!-- 열의 속성값을 나타내는 코드를 작성해주세요 (예 : 카테고리, 브랜드, 상품명, 가격) -->
+		  <tr class="table-secondary">
+			<th scope="col">카테고리</th>
+			<th scope="col">브랜드</th>
+			<th scope="col">상품명</th>
+			<th scope="col">가격</th>
+		  </tr>
+        </thead>
+        <tbody id="product_data_Table">
+          <!-- tbody요소의 id="product_data_Table" 는 지우거나 변경하면 안돼요! -->
+          <!-- 제품 데이터가 여기 추가됩니다. -->
+        </tbody>
+      </table>
+    </div>
+    <!-- 페이지 네이션 코드를 넣어주세요 -->
+	<nav aria-label="Page navigation example">
+	  <ul class="pagination justify-content-center">
+		<li class="page-item" id="prevBtn"><a class="page-link" href="#" id="prevLink">이전</a></li>
+		<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>
+		<li class="page-item"><a class="page-link" href="#" data-page="2">2</a></li>
+		<li class="page-item"><a class="page-link" href="#" data-page="3">3</a></li>
+		<li class="page-item" id="nextBtn"><a class="page-link" href="#" id="nextLink">다음</a></li>
+	  </ul>
+	  </nav>
+  </div>
+
+  <script>
+    // 크롤링한 데이터를 아래와 같은 형태의 객체 배열로 가정합니다.
+    // 추후 데이터베이스에 있는 데이터를 쿼리문으로 불러 올 수 있게 쿼리를 작성해 볼 수 있음
+
+    // 제품 데이터
+    const product_data = [
+      { category: "상의", brand: 'Supreme', product: '슈프림 박스로고 후드티', price: '390,000' },
+      { category: "하의", brand: 'DIESEL', product: '디젤 트랙 팬츠', price: '188,000' },
+      { category: "신발", brand: 'Nike', product: '에어포스 1', price: '137,000' },
+      { category: "패션잡화", brand: 'Music&Goods', product: '빵빵이 키링', price: '29,000' },
+      // ...
+    ];
+
+    // 제품 테이블에 데이터 추가
+    const product_data_Table = document.getElementById('product_data_Table');
+
+    // 초기 데이터 로딩
+    product_data.forEach((item) => {
+      const row = product_data_Table.insertRow();
+      row.insertCell(0).innerHTML = item.category;
+      row.insertCell(1).innerHTML = item.brand;
+      row.insertCell(2).innerHTML = item.product;
+      row.insertCell(3).innerHTML = item.price;
+    });
+  </script>
+  <script src = "darkmode.js"></script>
+  <script src = "AdminPage.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+</body>
+</html>
