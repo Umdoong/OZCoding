@@ -17,18 +17,16 @@ form.addEventListener("submit", function(event){
 	let userEmail = event.target.email.value
 
 	//아이디 정규식 검사
-	var idReg = /^[a-zA-Z]+[a-z0-9]{5,11}$/g;
+	let idReg = /^[a-zA-Z]+[a-z0-9]{5,11}$/g;
 	if( !idReg.test(userId) ) {
 		alert("아이디는 영문자로 시작하는 6~12자 영문자 또는 숫자이어야 합니다.");
 		return;
 	}
 
 	//비밀번호 정규식 검사
-	var passwordReg = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*?_]).{8,16}$/;
+	let passwordReg = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*?_]).{7,29}$/;
 	if (passwordReg.test(userPw1)) {
-		if (userPw1 === userPw2) {
-			alert('비밀번호가 서로 일치합니다.')
-		}else{
+		if (userPw1 !== userPw2) {
 			alert('비밀번호가 서로 일치하지 않습니다.')
 			return
 		}
@@ -38,18 +36,19 @@ form.addEventListener("submit", function(event){
 	}
 
 	//폰 정규식 검사
-	var phoneReg = /^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$/g;
+	let phoneReg = /^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$/g;
 	if(!phoneReg.test(userPhone)){
 		alert("올바른 형식의 휴대전화 번호가 아닙니다")
 		return
 	}
 
-	//알림창 띄우기
-	info=
-		`${userId}님 환영합니다.회원 가입 시 입력하신 내역은 다음과 같습니다.
+	//알림창 띄우기, 나중에 데이터 보낼 때 phone의 hyphen을 제거 후 보내기
+	let info=
+		`${userId}님 환영합니다.
+		회원 가입 시 입력하신 내역은 다음과 같습니다.
 		아이디 : ${userId}
 		이름 : ${userName}
-		전화번호 : ${userPhone}
+		전화번호 : ${userPhone.replace(/-/g, '')}
 		성별 : ${userGender}
 		이메일 : ${userEmail}`;
 	
