@@ -32,3 +32,18 @@
   width: 8%;
   min-width: 80px;
 }
+
+.btns {
+	position: absolute;
+	top:0
+}
+
+#signUp{
+	right: 0;
+	top: 5px
+}
+
+#darkMode{
+	right: 90px;
+}
+

@@ -35,6 +35,7 @@ document.getElementById('prevLink').addEventListener('click', function(e) {
 
 // 페이지네이션 상태 업데이트
 function updatePagination() {
+
 // 이전 버튼 비활성화 처리
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
@@ -58,6 +59,7 @@ document.querySelectorAll('.page-item').forEach(item => {
 });
 
 document.querySelector(`.page-link[data-page="${currentPage}"]`).parentElement.classList.add('active');
+
 }
 
 // 페이지 로드 시 초기화

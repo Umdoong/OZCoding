@@ -12,16 +12,16 @@
   <title>Admin Page</title>
 </head>
 <body>
-  <div class="container mt-3">
+  <div class="container mt-3" style="margin: 10px; position: absolute; left: 50%; transform: translateX(-50%)">
 	<div id="date" class="date"></div>
 	<div id="time" class="time"></div>
     <h3 class="mt-5 mb-3" id= "new_title">신규 등록 상품</h3>
 	<!-- 회원가입버튼 -->
-	<div class="buttons" style="float: right; margin-left: 10px">
+	<div class="btns" id="signUp"style="float: right; margin-left: 10px">
 		<input type="button" onclick="location.href='../Join/join.html'" value="회원가입" class="btn btn-primary" title="회원가입">
 	</div>
 	<!-- 다크모드 -->
-	<div style="float: right;">
+	<div class="btns" id="darkMode"style="float: right;">
 	  <strong style="float: top;">다크모드</strong>
 	  <input type="checkbox" class="checkbox" id="checkbox">
 	  <label for="checkbox" class="checkbox-label">
@@ -30,7 +30,7 @@
 	    <span class="ball"></span>
 	  </label>
 	</div>
-    <form class="row row-cols-lg-auto g-3 align-items-center" style="margin-top: 1px;">      
+    <form class="row row-cols-lg-auto g-3 align-items-center" style="margin-top: 1px">      
       <div class="col-12">
         <label class="visually-hidden" for="inlineFormSelectPref">Preference</label>
         <select class="form-select" id="inlineFormSelectPref" name="category_data_table">
@@ -46,7 +46,7 @@
 			<option selected>성별</option>
 			<option value="1">남자</option>
 			<option value="2">여자</option>
-		  </select>
+		</select>
       </div>
       <div class="col-3" style="width: 100%; max-width: 300px">
         <!-- input 입력창 코드를 넣어주세요 -->
@@ -78,11 +78,15 @@
     <!-- 페이지 네이션 코드를 넣어주세요 -->
 	<nav aria-label="Page navigation example">
 	  <ul class="pagination justify-content-center">
-		<li class="page-item" id="prevBtn"><a class="page-link" href="#" id="prevLink">이전</a></li>
+		<li class="page-item" id="prevBtn">
+			<a class="page-link" href="#" id="prevLink">이전</a>
+		</li>
 		<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>
 		<li class="page-item"><a class="page-link" href="#" data-page="2">2</a></li>
 		<li class="page-item"><a class="page-link" href="#" data-page="3">3</a></li>
-		<li class="page-item" id="nextBtn"><a class="page-link" href="#" id="nextLink">다음</a></li>
+		<li class="page-item" id="nextBtn">
+			<a class="page-link" href="#" id="nextLink">다음</a>
+		</li>
 	  </ul>
 	  </nav>
   </div>
