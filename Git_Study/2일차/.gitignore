@@ -1,0 +1,8 @@
+# 스테이징 되면 안될 민감한 정보가 담긴 파일
+admin_info.yaml
+# *.yaml 야믈 확장자 전부 스테이징 안할 수 있음
+# !admin_info.yaml 예외처리로 스테이징 할 파일
+# admin_info라는 파일 또는 폴더를 스테이징 하지 않는다
+# admin_info/ 이 디렉토리를 포함한 이하 디렉토리와 파일들을 스테이징 하지 않는다.
+# /admin_info 현재 경로에 있는 admin_info를 스테이징 하지 않는다.
+# .gitignore.io에서 원하는 프레임 워크나 언어를 적으면 자동으로 .gitignore 파일을 만들어준다.
