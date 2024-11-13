@@ -70,7 +70,7 @@ def create_posts_blueprint(mysql):
 			if not title or not content:
 				abort(400, messages = "Title or Content cannot be empty")
 
-			sql = "UPDATE posts SET title = %s, content = %s WHERE id = $s"
+			sql = "UPDATE posts SET title = %s, content = %s WHERE id = %s"
 			cursor.execute(sql, (title, content, id))
 			mysql.connection.commit()
 			return jsonify({"msg": "successfully updated title & content", "title": title, "content": content})
