@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인스타그램 스타일 앱</title>
+</head>
+<body>
+    <h1>사용자 목록</h1>
+    <ul id="user-list"></ul>
+
+    <h2>사용자 추가</h2>
+    <form id="create-user-form">
+        <label for="username">사용자 이름:</label>
+        <input type="text" id="username" required>
+        <button type="submit">사용자 추가</button>
+    </form>
+
+    <h2>게시물 추가</h2>
+    <form id="add-post-form">
+        <label for="username-post">사용자 이름:</label>
+        <input type="text" id="username-post" required>
+        <label for="post-title">게시물 제목:</label>
+        <input type="text" id="post-title" required>
+        <label for="post-likes">좋아요 수:</label>
+        <input type="number" id="post-likes" required>
+        <button type="submit">게시물 추가</button>
+    </form>
+
+    <h2>게시물 좋아요</h2>
+    <form id="like-post-form">
+        <label for="like-username">사용자 이름:</label>
+        <input type="text" id="like-username" required>
+        <label for="like-title">게시물 제목:</label>
+        <input type="text" id="like-title" required>
+        <button type="submit">좋아요</button>
+    </form>
+
+    <h2>게시물 삭제</h2>
+    <form id="delete-post-form">
+        <label for="delete-username">사용자 이름:</label>
+        <input type="text" id="delete-username" required>
+        <label for="delete-title">게시물 제목:</label>
+        <input type="text" id="delete-title" required>
+        <button type="submit">게시물 삭제</button>
+    </form>
+
+    <script>
+        // 사용자 목록을 가져오는 함수
+        async function loadUsers() {
+            const response = await fetch('/users');
+            const data = await response.json();
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = '';
+            data.users.forEach(user => {
+                const li = document.createElement('li');
+                li.innerText = user.username;
+                const postList = document.createElement('ul');
+                user.posts.forEach(post => {
+                    const postItem = document.createElement('li');
+                    postItem.innerText = `${post.title} (좋아요: ${post.likes})`;
+                    postList.appendChild(postItem);
+                });
+                li.appendChild(postList);
+                userList.appendChild(li);
+            });
+        }
+
+        // 사용자 추가
+        document.getElementById('create-user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const response = await fetch('/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+            const newUser = await response.json();
+            loadUsers();
+            document.getElementById('create-user-form').reset();
+        });
+
+        // 게시물 추가
+        document.getElementById('add-post-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username-post').value;
+            const title = document.getElementById('post-title').value;
+            const likes = parseInt(document.getElementById('post-likes').value);
+            const response = await fetch(`/users/post/${username}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, likes })
+            });
+            const newPost = await response.json();
+            loadUsers();
+            document.getElementById('add-post-form').reset();
+        });
+
+        // 좋아요 추가
+        document.getElementById('like-post-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('like-username').value;
+            const title = document.getElementById('like-title').value;
+            const response = await fetch(`/users/post/like/${username}/${title}`, {
+                method: 'PUT',
+            });
+            const post = await response.json();
+            loadUsers();
+            document.getElementById('like-post-form').reset();
+        });
+
+        // 게시물 삭제
+        document.getElementById('delete-post-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('delete-username').value;
+            const title = document.getElementById('delete-title').value;
+            const response = await fetch(`/users/post/delete/${username}/${title}`, {
+                method: 'DELETE',
+            });
+            const result = await response.json();
+            alert(result.message);  // 성공 메시지 또는 오류 메시지 표시
+            loadUsers();
+            document.getElementById('delete-post-form').reset();
+        });
+
+        // 페이지 로드 시 사용자 목록을 불러옴
+        loadUsers();
+    </script>
+</body>
+</html>

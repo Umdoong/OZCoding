@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo 앱</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <style>
+        .todo-item.completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+<div class="container mx-auto p-4">
+    <!-- 로그인 폼 -->
+    <div id="loginForm" class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-4">로그인</h2>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">아이디</label>
+                <input type="text" id="username"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">비밀번호</label>
+                <input type="password" id="password"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+            </div>
+            <button onclick="login()" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">로그인
+            </button>
+        </div>
+    </div>
+
+    <!-- Todo 앱 메인 컨텐츠 -->
+    <div id="todoApp" class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md hidden">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Todo 리스트</h2>
+            <button onclick="logout()" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
+                로그아웃
+            </button>
+        </div>
+
+        <!-- Todo 입력 폼 -->
+        <div class="flex gap-2 mb-6">
+            <input type="text" id="newTodo" placeholder="새로운 할 일을 입력하세요"
+                   class="flex-1 rounded-md border-gray-300 shadow-sm p-2 border">
+            <button onclick="addTodo()" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
+                추가
+            </button>
+        </div>
+
+        <!-- Todo 리스트 -->
+        <div id="todoList" class="space-y-2">
+            <!-- Todo 항목들이 여기에 동적으로 추가됩니다 -->
+        </div>
+    </div>
+
+    <!-- 에러 메시지 -->
+    <div id="errorMessage" class="max-w-2xl mx-auto mt-4 hidden">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <span id="errorText"></span>
+            <button onclick="closeError()" class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                <span class="text-xl">&times;</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let token = localStorage.getItem('access_token') || '';
+
+    // 에러 메시지 표시 함수
+    function showError(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        errorText.textContent = message;
+        errorDiv.classList.remove('hidden');
+    }
+
+    // 에러 메시지 닫기
+    function closeError() {
+        document.getElementById('errorMessage').classList.add('hidden');
+    }
+
+    // 로그아웃 함수
+    function logout() {
+        // localStorage에서 토큰 제거
+        localStorage.removeItem('access_token');
+        token = '';
+        document.getElementById('todoApp').classList.add('hidden');
+        document.getElementById('loginForm').classList.remove('hidden');
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+    }
+
+    // 로그인 처리
+    async function login() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if (!username || !password) {
+            showError('아이디와 비밀번호를 모두 입력해주세요.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                if (data.access_token) {
+                    // localStorage에 토큰 저장
+                    localStorage.setItem('access_token', data.access_token);
+                    token = data.access_token;
+                    document.getElementById('loginForm').classList.add('hidden');
+                    document.getElementById('todoApp').classList.remove('hidden');
+                    closeError();
+                    fetchTodos();
+                } else {
+                    showError('토큰이 없습니다.');
+                }
+            } else {
+                showError(data.msg || '로그인에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            showError('서버 연결 오류가 발생했습니다.');
+        }
+    }
+
+    // Todo 목록 가져오기
+    async function fetchTodos() {
+        if (!token) {
+            showError('로그인하지 않았습니다.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/todo/', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const todos = await response.json();
+                renderTodos(todos);
+            } else {
+                showError('Todo 목록을 불러오는데 실패했습니다.');
+            }
+        } catch (error) {
+            showError('서버 연결 오류가 발생했습니다.');
+        }
+    }
+
+    // Todo 목록 렌더링
+    function renderTodos(todos) {
+        const todoList = document.getElementById('todoList');
+        todoList.innerHTML = '';
+
+        if (todos.length === 0) {
+            todoList.innerHTML = '<p class="text-gray-500 text-center">할 일이 없습니다.</p>';
+            return;
+        }
+
+        todos.forEach(todo => {
+            const todoItem = document.createElement('div');
+            todoItem.className = 'flex items-center gap-2 p-3 border rounded hover:bg-gray-50';
+
+            todoItem.innerHTML = `
+                    <input type="checkbox" ${todo.completed ? 'checked' : ''}
+                           onchange="toggleTodo(${todo.id}, ${todo.completed})"
+                           class="rounded">
+                    <span class="flex-1 ${todo.completed ? 'completed' : ''}">${todo.title}</span>
+                    <button onclick="deleteTodo(${todo.id})"
+                            class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600">
+                        삭제
+                    </button>
+                `;
+
+            todoList.appendChild(todoItem);
+        });
+    }
+
+    // 새 Todo 추가
+    async function addTodo() {
+        const newTodoInput = document.getElementById('newTodo');
+        const title = newTodoInput.value.trim();
+
+        if (!title) return;
+
+        try {
+            const response = await fetch('/todo/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({title})
+            });
+
+            if (response.ok) {
+                newTodoInput.value = '';
+                fetchTodos();
+            } else {
+                showError('Todo 추가에 실패했습니다.');
+            }
+        } catch (error) {
+            showError('서버 연결 오류가 발생했습니다.');
+        }
+    }
+
+    // Todo 상태 토글
+    async function toggleTodo(id, completed) {
+        try {
+            const response = await fetch(`/todo/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({completed: !completed})
+            });
+
+            if (response.ok) {
+                fetchTodos();
+            } else {
+                showError('Todo 상태 변경에 실패했습니다.');
+            }
+        } catch (error) {
+            showError('서버 연결 오류가 발생했습니다.');
+        }
+    }
+
+    // Todo 삭제
+    async function deleteTodo(id) {
+        if (!confirm('정말로 이 할 일을 삭제하시겠습니까?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/todo/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                fetchTodos();
+            } else {
+                showError('Todo 삭제에 실패했습니다.');
+            }
+        } catch (error) {
+            showError('서버 연결 오류가 발생했습니다.');
+        }
+    }
+
+    // 페이지 로드 시 로그인 여부 확인
+    if (token) {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('todoApp').classList.remove('hidden');
+        fetchTodos();
+    }
+</script>
+</body>
+</html>
