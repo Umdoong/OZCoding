@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "membership-project"
 version = "0.1.0"
-description = "Django 2nd assignment"
+description = ""
 authors = ["hyo <umdoongs@gmail.com>"]
 readme = "README.md"
 
