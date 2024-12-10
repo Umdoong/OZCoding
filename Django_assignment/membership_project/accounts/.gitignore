@@ -1,0 +1,14 @@
+.idea
+.venv
+.DS_Store
+run.sh
+
+*/*.log
+*/*.pot
+*/*.pyc
+*/__pycache__
+__pycache__, *.pyc
+*/db.sqlite3
+*/media
+
+*/*/migrations
