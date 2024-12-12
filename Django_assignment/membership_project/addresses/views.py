@@ -2,13 +2,16 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound, ParseError
-from rest_framework.decorators import api_view
+from rest_framework.authentication import TokenAuthentication # 어떤 유저인지 식별, 사용자 인증
+from rest_framework.permissions import IsAuthenticated # 인증된 유저만 볼 수 있게 권한 부여
 from .models import AddressesModel
 from .serializers import AddressSerializer
 
 
 # Create your views here.
 class AddressesList(APIView):
+	authentication_classes = [TokenAuthentication]
+	permission_classes = [IsAuthenticated]
 	def get(self, request): # address테이블의 모든 정보 조회
 		addresses = AddressesModel.objects.all()
 		# 직렬화
@@ -24,6 +27,8 @@ class BaseAddressView(APIView):
 			raise NotFound
 
 class AddressDetail(BaseAddressView):
+	authentication_classes = [TokenAuthentication]
+	permission_classes = [IsAuthenticated]
 	def get(self, request, pk):
 		address = self.get_object(pk=pk)
 		serializer = AddressSerializer(address)
