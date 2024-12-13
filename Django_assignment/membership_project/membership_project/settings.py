@@ -44,6 +44,7 @@ CUSTOM_USER_APPS = [
     'addresses.apps.AddressesConfig',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
 ]
 
 INSTALLED_APPS = DJANGO_SYSTEM_APPS + CUSTOM_USER_APPS
@@ -135,6 +136,27 @@ AUTH_USER_MODEL = 'accounts.Account'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
     ]
+}
+
+from datetime import timedelta
+import environ
+
+
+env = environ.Env() # 환경 변수 객체화
+environ.Env.read_env()  # .env 파일을 읽어옴
+
+SIGNING_KEY = env("SIGNING_KEY")
+if not SIGNING_KEY:
+    raise RuntimeError("SIGNING_KEY 환경 변수가 설정되지 않았습니다!")
+
+# SIMPLE_JWT 설정
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
+    "SIGNING_KEY": SIGNING_KEY,
+    "ALGORITHM": "HS256",
+    "AUTH_HEADER_TYPES": ("Bearer", ),
 }

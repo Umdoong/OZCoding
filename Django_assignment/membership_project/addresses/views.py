@@ -10,7 +10,7 @@ from .serializers import AddressSerializer
 
 # Create your views here.
 class AddressesList(APIView):
-	authentication_classes = [TokenAuthentication]
+	# authentication_classes = [TokenAuthentication]
 	permission_classes = [IsAuthenticated]
 	def get(self, request): # address테이블의 모든 정보 조회
 		addresses = AddressesModel.objects.all()
