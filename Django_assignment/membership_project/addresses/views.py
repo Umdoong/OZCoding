@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound, ParseError
@@ -39,18 +39,20 @@ class CreateUserAddress(APIView):
 		serializer = AddressSerializer(data=request.data)
 		if serializer.is_valid():  # 데이터가 유효한지 확인
 			serializer.save(user_id=user_id)
-			return Response(serializer.data)
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
 		else:
 			raise ParseError(serializer.errors)
 
 class UpdateAddress(BaseAddressView):
-	# 일부만 수정할수도 있으니까 PATCH 사용
-	def patch(self, request, pk):
+	def put(self, request, pk):
 		address = self.get_object(pk) # 기존 정보가 있어야 수정 가능
 		serializer = AddressSerializer(address, data=request.data, partial=True)
-		# partial은 false가 기본값, True는 serializer를 사용하여 데이터를 검증할 때, 요청 데이터에 포함되지 않은 필드는 검증에서 제외
-		# false면 필드가 누락된 게 있으면 검증에서 오류 발생, 모든 필드가 요청데이터에 포함돼야함
-		# PATCH로 부분수정하기 위해 사용한다고 봐도 무방
+		"""
+		partial은 false가 기본값, True는 serializer를 사용하여 데이터를 검증할 때, 요청 데이터에 포함되지 않은 필드는 검증에서 제외
+		false면 필드가 누락된 게 있으면 검증에서 오류 발생, 모든 필드가 요청데이터에 포함돼야함
+		PATCH로 부분수정하기 위해 사용한다고 봐도 무방 => PUT을 이렇게 사용하면 멱등성이 깨질 수 있음
+		멱등성 : 어떤 대상에 같은 연산을 여러번 적용해도 결과가 달라지지 않는 성질
+		"""
 		if serializer.is_valid():
 			serializer.save()
 			return Response(serializer.data)
@@ -61,6 +63,6 @@ class DeleteAddress(BaseAddressView):
 	def delete(self, request, pk):
 		address = self.get_object(pk) # 어떤 내용을 지울지 가져와야함
 		address.delete()
-		return Response("delete complete")
+		return Response("delete complete", status=status.HTTP_204_NO_CONTENT)
 
 
