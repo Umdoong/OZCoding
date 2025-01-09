@@ -21,6 +21,11 @@ JWTExpiredException = HTTPException(
 	detail="JWT expired",
 )
 
+InvalidJWTException = HTTPException(
+	status_code=status.HTTP_401_UNAUTHORIZED,
+	detail="Invalid JWT",
+)
+
 
 # exception custom
 class UserNotFoundException(Exception):

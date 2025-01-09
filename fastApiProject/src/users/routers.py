@@ -1,17 +1,25 @@
 import os, uuid, shutil
 from datetime import date
 
-from fastapi.security.http import HTTPBasic, HTTPBasicCredentials
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from fastapi.security.http import HTTPBasic, HTTPBasicCredentials, HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import APIRouter, UploadFile, status, HTTPException, Depends
 from fastapi.responses import *
 
-from .authentication import create_access_token
+from config.database.connection import SessionFactory, get_db
+from .authentication import create_access_token, verify_access_token, authenticate
 from .exceptions import UserNotFoundException, UserProfileImageNotFoundException, UserIncorrectPasswordException
+from .models import User
 from .request import *
 from .response import *
 from .password import hash_password, check_password
 
 router = APIRouter(tags=["Users"])
+
+basic_auth = HTTPBasic()
+bearer_auth = HTTPBearer()
 
 users = [
 	{"id": 1, "username": "elon", "password": "musk123", "name": "Elon Musk", "date_of_birth": date(1970, 1, 1), "image": "684325e1-5a9c-4ad0-b226-09cdb1193bb4_IMG_3599.jpg"},
@@ -25,30 +33,56 @@ users_auth = [
 
 # 전체 유저 목록 조회 API
 @router.get('/users', status_code=status.HTTP_200_OK)
-def get_users_handler():
-	return UserListResponse.model_validate({"users": users})
-	# ==
-	# return UserListResponse(
-	# 	users=[UserResponse(**user) for user in users]
-	# )
+def get_users_handler(
+		_: int = Depends(authenticate),
+		db: Session = Depends(get_db),
+):
+	users_query = db.execute(select(User))
+	users = users_query.scalars().all()
+	return UserListResponse.model_validate({"users": users}) # model_validate를 쓰면 딕셔너리 자체를 넘길 수 있음
+
+
+# C: 사용자 프로필 이미지 업데이트 API
+@router.post('/users/me/images',
+			 status_code=status.HTTP_201_CREATED,
+			response_model = UserResponse,
+			)
+def update_profile_image_handler(
+		profile_image: UploadFile,
+		user_id: int = Depends(authenticate)
+):
+	for user in users:
+		if user["id"] == user_id:
+			# uuid는 임의의 중복되지 않는 패턴을 만들어주는 알고리즘
+			unique_filename = f"{uuid.uuid4()}_{profile_image.filename}"
+
+			# file_path => users/images/{unique_filename}
+			file_path = os.path.join("users/images", unique_filename)
+			#
+			with open(file_path, "wb") as f:
+				shutil.copyfileobj(profile_image.file, f)
+
+			user["image"] = unique_filename
+			return UserResponse.model_validate(user)
+	raise UserNotFoundException
 
 
 # C: 새로운 유저 생성 API
 @router.post('/users',
 			 status_code=status.HTTP_201_CREATED,
-			 response_model=UserResponse,
+			 response_model=UserMeResponseAuth,
 			 )
-def create_user_handler(body: UserCreateRequestBody):
+def create_user_handler(
+		body: UserCreateRequestBody,
+		db: Session = Depends(get_db),
+):
 	# 1. 사용자로부터 데이터를 받고
 	# 2. 받은 데이터의 유효성 검사
 	# 3. 새로운 유저 데이터를 유저 목록에 추가
-	new_user ={
-		"id": len(users) + 1,
-		"name": body.name,
-		"date_of_birth": body.date_of_birth,
-	}
-	users.append(new_user)
-	return UserResponse.model_validate(new_user) # model_validate를 쓰면 딕셔너리 자체를 넘길 수 있음
+	new_user = User(username=body.username, password=hash_password(plain_text=body.password))
+	db.add(new_user)
+	db.commit()
+	return UserMeResponseAuth.model_validate(new_user)
 
 
 # C: 비밀번호 해쉬화
@@ -66,8 +100,6 @@ def create_user_hash_handler(body: UserCreateRequestBodyAuth):
 	users_auth.append(new_user)
 	return UserMeResponseAuth.model_validate(new_user) # model_validate를 쓰면 딕셔너리 자체를 넘길 수 있음
 
-
-basic_auth = HTTPBasic()
 
 # R: 로그인
 @router.get(
@@ -87,7 +119,7 @@ def user_login_handler(credentials: HTTPBasicCredentials = Depends(basic_auth)):
 
 
 
-# R: 내 정보 조회 API
+# R: 내 정보 조회 API (BASIC)
 @router.get(
 	"/users/me",
 	status_code=status.HTTP_200_OK,
@@ -105,6 +137,19 @@ def get_me_handler(credentials: HTTPBasicCredentials = Depends(basic_auth)):
 	raise UserNotFoundException
 
 
+# R: 내 정보 조회 API (BEARER)
+@router.get(
+	"/users/me/jwt",
+	status_code=status.HTTP_200_OK,
+	response_model=UserMeResponseAuth
+)
+def get_me_jwt_handler(user_id: int = Depends(authenticate)):
+	for user in users_auth:
+		if user_id == user["id"]:
+			return UserMeResponseAuth.model_validate(user)
+	raise UserNotFoundException
+
+
 # R: 특정 유저 조회 API
 @router.get('/users/{user_id}',
 			status_code=status.HTTP_200_OK,
@@ -117,47 +162,27 @@ def get_user_handler(user_id: int):
 	raise UserNotFoundException
 
 # U: 유저 정보 업데이트 API
-@router.patch('/users/{user_id}',
+@router.patch('/users/me/jwt',
 			  status_code=status.HTTP_200_OK,
 			  response_model=UserResponse,
 			  )
-def update_user_handler(user_id: int, body: UserUpdateRequestBody):
+def update_user_handler(
+		body: UserUpdateRequestBody,
+		user_id: int = Depends(authenticate)
+):
 	for user in users:
 		if user["id"] == user_id:
-			user["name"] = body.name
-			return UserResponse.model_validate(user)
-
-	raise UserNotFoundException
-
-
-# U: 사용자 프로필 이미지 업데이트 API
-@router.post('/users/{user_id}/images',
-			 status_code=status.HTTP_201_CREATED,
-			response_model = UserResponse,
-			)
-def update_profile_image_handler(user_id: int, profile_image: UploadFile):
-	for user in users:
-		if user["id"] == user_id:
-			# uuid는 임의의 중복되지 않는 패턴을 만들어주는 알고리즘
-			unique_filename = f"{uuid.uuid4()}_{profile_image.filename}"
-
-			# file_path => users/images/{unique_filename}
-			file_path = os.path.join("users/images", unique_filename)
-			#
-			with open(file_path, "wb") as f:
-				shutil.copyfileobj(profile_image.file, f)
-
-			user["image"] = unique_filename
+			user["username"] = body.username
 			return UserResponse.model_validate(user)
 	raise UserNotFoundException
 
 
 # R: 이미지 다운로드 API
-@router.get("/users/{user_id}/images/download",
+@router.get("/users/me/images/download",
 			status_code=status.HTTP_200_OK,
 			response_model=None,
 			)
-def download_profile_image_handler(user_id: int):
+def download_profile_image_handler(user_id: int = Depends(authenticate)):
 	for user in users:
 		if user["id"] == user_id:
 			if image := user.get("image"): # 월러스
@@ -172,11 +197,11 @@ def download_profile_image_handler(user_id: int):
 
 
 # D: 유저 삭제 API
-@router.delete('/users/{user_id}',
+@router.delete('/users/me/jwt',
 			   status_code=status.HTTP_204_NO_CONTENT,
 			   response_model=None,
 			   )
-def delete_user_handler(user_id: int):
+def delete_user_handler(user_id: int = Depends(authenticate)):
 	for user in users:
 		if user["id"] == user_id:
 			users.remove(user)
