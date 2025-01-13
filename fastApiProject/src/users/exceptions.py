@@ -26,6 +26,10 @@ InvalidJWTException = HTTPException(
 	detail="Invalid JWT",
 )
 
+DuplicateUsernameException = HTTPException(
+	status_code=status.HTTP_409_CONFLICT, # 데이터가 충돌난다
+	detail="Username already exists"
+)
 
 # exception custom
 class UserNotFoundException(Exception):

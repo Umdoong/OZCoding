@@ -1,3 +1,5 @@
+from http.client import responses
+
 from fastapi import FastAPI, Response, status, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -73,7 +75,63 @@ def user_not_found_exception_handler(request: Request, exc: UserNotFoundExceptio
 		content={'detail': exc.detail}
 	)
 
+# AssertionError 클라이언트 쪽에 보여주고 싶을 때
+@app.exception_handler(AssertionError)
+def assert_exception_handler(_: Request, exc: AssertionError):
+	return JSONResponse(
+		status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+		content={'detail': str(exc)}
+	)
+
 
 # salt는 같은 입력값을 넣어도 결과값이 달라짐 (bcrypt.checkpw로 확인 가능)
 # salt를 이용해서 brute-force를 방지
 # -> db가 털렸을 때 brute-force로 해쉬값을 찾아낼 때 salt를 사용하면 같은 해쉬 결과값을 찾아내기가 매우 힘들어진다.
+
+
+#################비동기#################
+import asyncio, time, httpx
+
+@app.get("/sync/json")
+async def sync_json_hander():
+	start_time = time.perf_counter()
+	urls = [
+		"https://jsonplaceholder.typicode.com/posts",
+		"https://jsonplaceholder.typicode.com/posts",
+		"https://jsonplaceholder.typicode.com/posts"
+	]
+	responses = []
+	for url in urls:
+		responses.append(httpx.get(url).json())
+
+	end_time = time.perf_counter()
+	return {
+		"duration": end_time - start_time,
+		"responses": responses
+	}
+
+
+@app.get("/async/json")
+async def async_json_hander():
+	start_time = time.perf_counter()
+	urls = [
+		"https://jsonplaceholder.typicode.com/posts",
+		"https://jsonplaceholder.typicode.com/posts",
+		"https://jsonplaceholder.typicode.com/posts"
+	]
+	async with httpx.AsyncClient() as client:
+		tasks = []
+		for url in urls:
+			tasks.append(client.get(url))
+		responses = await asyncio.gather(*tasks)
+
+		# 코루틴 객체에서 json을 호출해줘야함
+		result = []
+		for res in responses:
+			result.append(res.json())
+
+	end_time = time.perf_counter()
+	return {
+		"duration": end_time - start_time,
+		"responses": result
+	}

@@ -31,7 +31,7 @@ test.boo
 """
 
 class UserUpdateRequestBody(BaseModel):
-	username: str
+	password: str
 
 
 class UserCreateRequestBodyAuth(BaseModel):

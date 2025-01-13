@@ -6,7 +6,7 @@ class UserResponse(BaseModel):
 	id: int
 	name: str
 	date_of_birth: date
-	image: str | None = None
+	profile_image: str | None
 	model_config = ConfigDict(from_attributes=True)
 
 
@@ -16,9 +16,7 @@ class UserMeResponse(BaseModel):
 	id: int
 	username: str
 	password: str
-	name: str
-	date_of_birth: date
-	image: str | None = None
+	profile_image: str | None
 	model_config = ConfigDict(from_attributes=True)
 
 
