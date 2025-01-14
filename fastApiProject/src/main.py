@@ -1,6 +1,6 @@
 from http.client import responses
 
-from fastapi import FastAPI, Response, status, Request
+from fastapi import FastAPI, Response, status, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
@@ -11,6 +11,8 @@ from datetime import datetime
 from items.routers import router as items_router
 from users.routers import router as users_router # as = alias
 from users.exceptions import UserNotFoundException
+from users.routers_async import router as user_async_router
+from websocket_connection import ConnectionManager
 
 # pydantic: 데이터 유효성 검사를 하기 위한 라이브러리
 # BaseModel: 우리가 직접 검증할 데이터를 선언해서 사용할 때
@@ -20,6 +22,7 @@ app = FastAPI()
 # app과 router를 연결시켜줌
 app.include_router(items_router)
 app.include_router(users_router)
+app.include_router(user_async_router)
 
 @app.get("/now")
 def get_now_handler():
@@ -122,8 +125,11 @@ async def async_json_hander():
 	async with httpx.AsyncClient() as client:
 		tasks = []
 		for url in urls:
-			tasks.append(client.get(url))
+			coro = client.get(url) # 코루틴
+			tasks.append(coro)
 		responses = await asyncio.gather(*tasks)
+		# asyncio.gather(*tasks) -> 코루틴
+		# await가 이벤트 루프에서 코루틴을 실행한 결과를 responses에 반환
 
 		# 코루틴 객체에서 json을 호출해줘야함
 		result = []
@@ -135,3 +141,29 @@ async def async_json_hander():
 		"duration": end_time - start_time,
 		"responses": result
 	}
+
+
+################웹소켓#################
+connection_manager = ConnectionManager()
+
+@app.websocket("/ws/chats/{chat_room_id}")
+async def chat_handler(connection: WebSocket, chat_room_id: int):
+	"""
+	보통 이렇게 돌아감
+	await connection.accept() # 클라이언트가 보낸 WebSocket요청 수락, 안받으면 계속 요청올 것
+	await connection.send_text(f"레전드 웹 소켓 연결 성공[{chat_room_id}]") # 서버에서 클라로 메세지를 보낸다
+	text = await connection.receive_text() # receive: 클라에서 보낸 메세지를 서버에서 받는다
+	await connection.send_text(text)
+	await connection.close() # WS 연결 종료
+	"""
+	await connection_manager.connect(connection=connection, room_id=chat_room_id)
+
+	try:
+		while True:
+			text = await connection.receive_text()
+			await connection_manager.broadcast(connection=connection, room_id=chat_room_id, massage=text)
+	except WebSocketDisconnect:
+		connection_manager.disconnect(connection=connection, room_id=chat_room_id)
+
+
+# 유저별로 커넥션을 만든다 / user_connection = {1: c1, c2} 1번 유저가 커넥션 1번, 커넥션 2번을 가진다??

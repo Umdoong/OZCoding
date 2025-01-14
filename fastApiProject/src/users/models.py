@@ -1,5 +1,5 @@
-import os, uuid, shutil
-
+import os, uuid, shutil, aiofiles
+from aiofiles import os as aiofiles_os
 from fastapi import UploadFile
 from config.database.orm import Base
 from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint
@@ -33,20 +33,38 @@ class User(Base):
 		assert is_bcrypt_pattern(password=password), "Invalid password pattern" # message log에만 찍힘
 		self.password = password
 
-	def remove_profile_image(self):
+	# 동기
+	# def remove_profile_image(self):
+	# 	if self.profile_image:
+	# 		os.remove(self.profile_image)
+
+	# def upload_profile_image(self, profile_image: UploadFile):
+	# 	self.remove_profile_image()
+	#
+	# 	# uuid는 임의의 중복되지 않는 패턴을 만들어주는 알고리즘
+	# 	unique_filename: str = f"{uuid.uuid4()}_{profile_image.filename}"
+	#
+	# 	# file_path => users/images/{unique_filename}
+	# 	file_path: str = os.path.join("users/images", unique_filename)
+	# 	with open(file_path, "wb") as f:
+	# 		shutil.copyfileobj(profile_image.file, f)
+	#
+	# 	self.profile_image = file_path
+
+	async def remove_profile_image(self):
 		if self.profile_image:
-			os.remove(self.profile_image)
+			aiofiles_os.remove(self.profile_image)
 
-	def upload_profile_image(self, profile_image: UploadFile):
-		self.remove_profile_image()
+	async def upload_profile_image(self, profile_image: UploadFile):
+		await self.remove_profile_image()
 
-		# uuid는 임의의 중복되지 않는 패턴을 만들어주는 알고리즘
 		unique_filename: str = f"{uuid.uuid4()}_{profile_image.filename}"
 
-		# file_path => users/images/{unique_filename}
-		file_path: str = os.path.join("users/images", unique_filename)
-		with open(file_path, "wb") as f:
-			shutil.copyfileobj(profile_image.file, f)
+		file_path: str = f"users/images/{unique_filename}"
+
+		async with aiofiles.open(file_path, "wb") as f:
+			while chunk := await profile_image.read(1024 * 4):
+				await f.write(chunk)
 
 		self.profile_image = file_path
 
